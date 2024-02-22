@@ -1,0 +1,73 @@
+###############################################################################
+#  University of Hawaii, College of Engineering
+#  Lab 4 - Memory Scanner - EE 491F (Software Reverse Engineering) - Spr 2023
+#
+## Configuration for clang-tidy
+##
+## @see https://clang.llvm.org/extra/clang-tidy/
+##
+## @file   .clang-tidy
+## @author Mark Nelson <marknels@hawaii.edu>
+###############################################################################
+
+# -*            # Start by turning everything off
+# boost-*       # Enable the following families of checks
+# bugprone-*
+#   -bugprone-easily-swappable-parameters  # I've never liked this lint rule, so I'm removing it
+# cert-*
+#   -cert-err58-cpp      # It's OK to have a static object that may throw an exception during initialization.  If it crashes, at least it happens fast.
+#   -cert-msc30-c,       # We can use the rand() function in C
+#   -cert-msc50-cpp,     # We can use the rand() function in C++
+# clang-analyzer-*
+# llvm-*
+# -llvm-header-guard   # We use #pragma once, not a traditional header guard
+# misc-*
+#   -misc-no-recursion
+#   -misc-non-private-member-variables-in-classes
+# performance-*
+#   -performance-no-int-to-ptr                 # This is another esoteric language feature I'll allow
+# portability-*
+# readability-*
+#   -readability-implicit-bool-conversion      # This is a pain... sometimes it's helpful, but mostly it adds redundant code
+#   -readability-redundant-access-specifiers,  # Redundant access specifiers works for my documentation style
+---
+Checks: >
+  -*,
+  boost-*,
+  bugprone-*,
+    -bugprone-easily-swappable-parameters,
+  cert-*,
+    -cert-err58-cpp,
+    -cert-msc30-c,
+    -cert-msc32-c,
+    -cert-msc50-cpp,
+    -cert-msc51-cpp,
+  clang-analyzer-*,
+    -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
+  llvm-*,
+    -llvm-header-guard,
+  misc-*,
+    -misc-no-recursion,
+    -misc-non-private-member-variables-in-classes,
+  performance-*,
+    -performance-no-int-to-ptr,
+  portability-*,
+  readability-*,
+    -readability-convert-member-functions-to-static,
+    -readability-implicit-bool-conversion,
+    -readability-magic-numbers,
+    -readability-redundant-access-specifiers,
+    -readability-redundant-string-init
+HeaderFilterRegex: '.+.h'
+AnalyzeTemporaryDtors: false
+FormatStyle: none
+User: marknels
+CheckOptions:
+  readability-identifier-length.IgnoredVariableNames: 'i|j|k|fd'
+  readability-identifier-length.IgnoredParameterNames: 'fd'
+  llvm-else-after-return.WarnOnUnfixable: 'false'
+  cert-msc32-c.DisallowedSeedTypes: 'time_t,std::time_t'
+  readability-function-cognitive-complexity.Threshold: 180
+
+UseColor: true
+...

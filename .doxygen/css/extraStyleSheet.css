@@ -1,0 +1,50 @@
+/* ////////////////////////////////////////////////////////////////////////////
+//  University of Hawaii, College of Engineering
+//  Lab 4 - Memory Scanner - EE 491F (Software Reverse Engineering) - Spr 2024
+//
+/// Custom style sheet for Doxygen documentation
+///
+/// @author  Mark Nelson <marknels@hawaii.edu>
+/// @file    extraStyleSheet.css
+//////////////////////////////////////////////////////////////////////////// */
+
+code {
+    color: lime;
+}
+
+pre.fragment {
+    color: lime;
+    background-color: #1f1f1f
+}
+
+span.comment {
+    color: lime;
+}
+
+span.preprocessor {
+    color: silver;
+}
+
+span.keywordflow {
+    color: darkorange;
+}
+
+h1 {
+    font-size: 1.5em;
+}
+
+/* Format the @API xrefitem Alias */
+p.startdd {
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+p.interdd {
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+p.enddd {
+    margin-top: 2px;
+    margin-bottom: 4px;
+}

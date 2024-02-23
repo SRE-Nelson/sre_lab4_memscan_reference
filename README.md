@@ -13,12 +13,12 @@ The source code is documented at:  https://www2.hawaii.edu/~marknels/sre/memscan
 
 # Memscan
 Memscan is an assignment for my Software Reverse Engineering class.
-It reads from `/proc/self/maps` and reports information about 
+It reads from `/proc/self/maps` and reports information about
 the virtual memory regions for the current process.
 
 memscan can be run with no command line options and will generate:
 
-    $ ./memscan    
+    $ ./memscan
     Memory scanner
      0: 0x567af350d000 - 0x567af350dfff  r--p  Number of bytes read      4,096  Count of 0x41 is       0
      1: 0x567af350e000 - 0x567af350efff  r-xp  Number of bytes read      4,096  Count of 0x41 is       2
@@ -36,25 +36,25 @@ their permissions and the size of the regions.
 # Details
 This lab looks easy at first, but (hopefully) proves to be quite challenging.
 
-As you know, user-processes run in "Virtual Memory" process space  a process 
-space that is unique for each process.  
-In actuality, the process space is made up of "regions".  Some the regions are 
-completely unique to the process (such as the read-write data pages and the 
-stack for the process).  There are other regions that are shared amongst many 
+As you know, user-processes run in "Virtual Memory" process space  a process
+space that is unique for each process.
+In actuality, the process space is made up of "regions".  Some the regions are
+completely unique to the process (such as the read-write data pages and the
+stack for the process).  There are other regions that are shared amongst many
 processes.
 
-It's the Kernel's responsibility to manage (and assign/map) the memory regions 
-for each process  however, there's nothing secret about how they are mapped.  
-Therefore, Linux publishes the memory map information on the filesystem for 
-every process.  Information about Linux processes are contained in a directory 
+It's the Kernel's responsibility to manage (and assign/map) the memory regions
+for each process  however, there's nothing secret about how they are mapped.
+Therefore, Linux publishes the memory map information on the filesystem for
+every process.  Information about Linux processes are contained in a directory
 called `/proc`.
 
-`/proc` contains a "special process directory" for every process currently 
+`/proc` contains a "special process directory" for every process currently
 running and another directory called `self` that links to the currently running
-process.  Each of these directories contain information about the process, such 
+process.  Each of these directories contain information about the process, such
 as the environment `environ`, command line `cmdline`, and overall status `status`.
 
-`maps` describes a region of contiguous virtual memory in a process or thread.  
+`maps` describes a region of contiguous virtual memory in a process or thread.
 Here's an example:
 
     55cb8756b000-55cb87598000 r--p 00000000 08:04 1574849  /usr/bin/bash
@@ -62,7 +62,7 @@ Here's an example:
     55cb87669000-55cb876a2000 r--p 000fe000 08:04 1574849  /usr/bin/bash
     55cb876a2000-55cb876a6000 r--p 00136000 08:04 1574849  /usr/bin/bash
     55cb876a6000-55cb876af000 rw-p 0013a000 08:04 1574849  /usr/bin/bash
-    55cb876af000-55cb876b9000 rw-p 00000000 00:00 0        
+    55cb876af000-55cb876b9000 rw-p 00000000 00:00 0
     55cb8832a000-55cb88494000 rw-p 00000000 00:00 0        [heap]
     7f3ff0ecf000-7f3ffe3ff000 r--p 00000000 08:04 1838829  /usr/lib/locale/locale
     7f3ffe3ff000-7f3ffecd3000 r--s 00000000 08:07 131095   /var/lib/sss/mc/passwd
@@ -81,7 +81,7 @@ Each row has the following fields:
 
 
 Notes:
-  - `maps` reports addresses like this:  [ `00403000-00404000` )... the "end address" one byte past the valid range.  
+  - `maps` reports addresses like this:  [ `00403000-00404000` )... the "end address" one byte past the valid range.
     When memscan prints a range, it shows inclusive addresses like this: [ `00403000-00403fff` ]
   - `[vdso]` stands for virtual dynamic shared object.  It's used by system calls to switch to kernel mode.
   - Permissions can be changed using the [mprotect()][1] system call.
@@ -92,9 +92,9 @@ Notes:
 
 ## The Assignment
 
-You are to write a program from scratch.  Feel free to incorporate artifacts 
-from other labs such as `.gitignore`, header blocks or a simple `Makefile`.  
-Your lab must include a Makefile, which must have (at least) the following 
+You are to write a program from scratch.  Feel free to incorporate artifacts
+from other labs such as `.gitignore`, header blocks or a simple `Makefile`.
+Your lab must include a Makefile, which must have (at least) the following
 targets:
   - `make clean`
   - `make`
@@ -135,7 +135,7 @@ Finally, scan each region and print the following information:
     22: 0x7ffe6d7c2000 - 0x7ffe6d7c3fff  r-xp  Number of bytes read      8,192  Count of 0x41 is      33
     23: 0xffffffffff600000 - 0xffffffffff600fff  --xp  read permission not set on [vsyscall]
 
-This program counts the number of `A`s in each region.  It doesn't matter what 
+This program counts the number of `A`s in each region.  It doesn't matter what
 you do as long as you read every single byte you can read.
 
 Your program should compile clean (no warnings) and must not core dump when it runs.
@@ -168,8 +168,49 @@ Memscan uses the following `Makefile` targets:
 | `make valgrind`| Use `valgrind` to do dynamic analysis on the source code      |
 
 
+# Valgrind Notes
+Valgrind reports that this probram has errors: `More than 10000000 total errors
+detected.  I'm not reporting any more.` which is awesome (I'm putting that on my resume).
+
+Basically, `memscan` doesn't behave like ordinary programs...
+it breaks conventions (like looking past buffers into uninitialized memory).
+
+Essentially, Valgrind is quite correctly reporting that we are reading uninitialized
+memory... so even though Valgrind is reporting errors, if you look at them closely,
+they are _completly understandable_.
+
+If you comment out:
+
+    aByteInMemory = *(char*)scanThisAddress;
+
+Then Valgrind will run run successfully, which tells us that the program is
+correct and soundly written.
+
+
+# A Fun Experiment
+A student asked, "We are reading from every readable region of memory...
+what would happen if you tried writing to every writable region of memory"
+
+What an excellent question!  I didn't know the answer, so I tried it:
+
+    for( void* scanThisAddress = map[i].pAddressStart ; scanThisAddress < map[i].pAddressEnd ; scanThisAddress++ ) {
+       aByteInMemory = *(char*)scanThisAddress;         // Read memory
+       if( writable ) {
+          *(char*)scanThisAddress = aByteInMemory;      // Write memory
+    //    *(char*)scanThisAddress = aByteInMemory + 1;  // Just for fun, try this
+       }
+    }
+
+...and you know what, it totally works!  On one hand, that's what I'd expect.
+On the other hand, there's a lot of magic that happens deep inside these systems,
+so I wouldn't be suprised if it would have broken something.
+
+Just for fun, try writing something back that isn't what was read...  I'll leave
+it to your imagination as to what happens.
+
+
 # Toolchain
-This project is the product of a tremendous amount of R&D and would not be 
+This project is the product of a tremendous amount of R&D and would not be
 possible without the following world-class tools:
 
 | Tool           | Website                    |                                                          Logo                                                          |

@@ -58,10 +58,11 @@
 /// @author Mark Nelson <marknels@hawaii.edu>
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <locale.h>  // For set_locale() LC_NUMERIC
-#include <stdio.h>   // For printf() fopen() and FILE
-#include <stdlib.h>  // For EXIT_SUCCESS and EXIT_FAILURE
-#include <string.h>  // For strtok() strcmp() and memset()
+#include <locale.h>   // For set_locale() LC_NUMERIC
+#include <stdbool.h>  // For bool
+#include <stdio.h>    // For printf() fopen() and FILE
+#include <stdlib.h>   // For EXIT_SUCCESS and EXIT_FAILURE
+#include <string.h>   // For strtok() strcmp() and memset()
 
 
 /// The `maps` file we intend to read from `/proc`
@@ -150,18 +151,18 @@ void readEntries() {
       ///       out of the ordinary
 
       // Convert the strings holding the start & end address into pointers
-		int retVal1;
-		int retVal2;
+      int retVal1;
+      int retVal2;
       retVal1 = sscanf( map[numMaps].sAddressStart, "%p", &(map[numMaps].pAddressStart) ) ;
       retVal2 = sscanf( map[numMaps].sAddressEnd,   "%p", &(map[numMaps].pAddressEnd  ) ) ;
 
-		if( retVal1 != 1 || retVal2 != 1 ) {
-      	printf( "Map entry %zu is unable parse start [%s] or end address [%s].  Exiting.\n"
-      	      ,numMaps
-      	      ,map[numMaps].sAddressStart
-      	      ,map[numMaps].sAddressEnd ) ;
-      	exit( EXIT_FAILURE );
-		}
+      if( retVal1 != 1 || retVal2 != 1 ) {
+         printf( "Map entry %zu is unable parse start [%s] or end address [%s].  Exiting.\n"
+               ,numMaps
+               ,map[numMaps].sAddressStart
+               ,map[numMaps].sAddressEnd ) ;
+         exit( EXIT_FAILURE );
+      }
 
       #ifdef DEBUG
          printf( "DEBUG:  " ) ;
@@ -215,16 +216,24 @@ void scanEntries() {
 
       // Skip excluded paths
       if( map[i].sPath != NULL ) {
-      	for( size_t j = 0 ; ExcludePaths[j][0] != '\0' ; j++ ) {
-         	if( strcmp( map[i].sPath, ExcludePaths[j] ) == 0 ) {
-            	printf( "%s excluded", map[i].sPath );
-            	goto finishRegion;
-         	}
-      	}
+         for( size_t j = 0 ; ExcludePaths[j][0] != '\0' ; j++ ) {
+            if( strcmp( map[i].sPath, ExcludePaths[j] ) == 0 ) {
+               printf( "%s excluded", map[i].sPath );
+               goto finishRegion;
+            }
+         }
       }
 
+      char aByteInMemory = 0;
+      bool writable = map[i].sPermissions[1] == 'w';
+
       for( void* scanThisAddress = map[i].pAddressStart ; scanThisAddress < map[i].pAddressEnd ; scanThisAddress++ ) {
-         if( *(char*)scanThisAddress == CHAR_TO_SCAN_FOR ) {
+         aByteInMemory = *(char*)scanThisAddress;         // Read memory
+         if( writable ) {
+            *(char*)scanThisAddress = aByteInMemory;      // Write memory
+//          *(char*)scanThisAddress = aByteInMemory + 1;  // Just for fun, try this
+         }
+         if( aByteInMemory == CHAR_TO_SCAN_FOR ) {
             numBytesFound++ ;
          }
          numBytesScanned++ ;
@@ -236,7 +245,7 @@ void scanEntries() {
           ,numBytesFound) ;
 
       finishRegion:
-      // printf( "%s\n", map[i].sPath != NULL ? map[i].sPath : "" );
+      printf( "  %s", map[i].sPath != NULL ? map[i].sPath : "" );
       printf( "\n" );
    } // for()
 } // scanEntries()
@@ -257,7 +266,7 @@ int main( int argc, char* argv[] ) {
 
    programName = argv[0];
 
-	char* sRetVal;
+   char* sRetVal;
    sRetVal = setlocale( LC_NUMERIC, "" ) ;
    if( sRetVal == NULL ) {
       printf( "%s: Unable to set locale.  Exiting.\n", programName ) ;

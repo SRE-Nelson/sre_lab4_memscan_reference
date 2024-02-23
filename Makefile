@@ -14,17 +14,22 @@ TARGET = memscan
 
 all: clang
 
-clang: CC=clang
+clang: CC = clang
 clang: $(TARGET)
 
-gcc: CC=gcc
+gcc: CC = gcc
 gcc: $(TARGET)
 
 CFLAGS = -Wall -Wextra -Werror -march=native -mtune=native $(DEBUG_FLAGS)
-LINTER = clang-tidy --quiet
+LINT   = clang-tidy
+LINTFLAGS = --quiet
 
-debug: DEBUG_FLAGS = -g -DDEBUG
-debug: clean $(TARGET)
+debug: DEBUG_FLAGS = -g -DDEBUG -O0
+debug: clean clang
+
+test:     CFLAGS += -DTESTING
+
+valgrind: CFLAGS += -DTESTING -g -O0 -fno-inline -march=x86-64 -mtune=generic
 
 memscan.o: memscan.c
 	$(CC) $(CFLAGS) -c $^
@@ -32,8 +37,8 @@ memscan.o: memscan.c
 memscan: memscan.o
 	$(CC) $(CFLAGS) -o $(TARGET) $^
 
-lint: $(TARGET)
-	$(LINTER) memscan.c --
+lint:
+	$(LINT) $(LINTFLAGS) memscan.c --
 
 doc: $(TARGET)
 	rsync --recursive --mkpath --checksum --delete --compress --stats --chmod=o+r,Do+x .doxygen/images .doxygen/docs/html/.doxygen

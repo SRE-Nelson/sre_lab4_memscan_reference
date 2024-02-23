@@ -506,7 +506,7 @@ LOOKUP_CACHE_SIZE      = 0
 # DOT_NUM_THREADS setting.
 # Minimum value: 0, maximum value: 32, default value: 1.
 
-NUM_PROC_THREADS       = 1
+NUM_PROC_THREADS       = 4
 
 # If the TIMESTAMP tag is set different from NO then each generated page will
 # contain the date or date and time when the page was generated. Setting this to
@@ -1013,7 +1013,7 @@ RECURSIVE              = NO
 # Note that relative paths are relative to the directory from which doxygen is
 # run.
 
-EXCLUDE                = sample_code.c
+EXCLUDE                =
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
@@ -1249,10 +1249,7 @@ CLANG_ADD_INC_PATHS    = YES
 
 CLANG_OPTIONS          = "-I/usr/lib/clang/16/include/" \
                          "-I/usr/include/llvm/" \
-                         "-I/usr/include/linux/" \
-                         "-I." \
-                         "-I./include/" \
-                         "-I../include/"
+                         "-I/usr/include/linux/"
 
 # If clang assisted parsing is enabled you can provide the clang parser with the
 # path to the directory containing a file called compile_commands.json. This
@@ -2516,7 +2513,7 @@ HAVE_DOT               = YES
 # Minimum value: 0, maximum value: 32, default value: 0.
 # This tag requires that the tag HAVE_DOT is set to YES.
 
-DOT_NUM_THREADS        = 24
+DOT_NUM_THREADS        = 4
 
 # DOT_COMMON_ATTR is common attributes for nodes, edges and labels of
 # subgraphs. When you want a differently looking font in the dot files that

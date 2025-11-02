@@ -7,9 +7,9 @@ We live in an ocean of illegal addresses dotted with islands of legal
 addresses.  Let's explore every grain of sand on our islands.
 
 #### Links
-The project's home page:  https://github.com/marknelsonengineer-sp23/sre_lab4_memscan  (hosted by GitHub)
+The project's git repository is at:  https://github.com/marknelsonengineer-sp23/sre_lab4_memscan  (hosted by GitHub)
 
-The source code is documented at:  https://www2.hawaii.edu/~marknels/sre/memscan  (hosted by The University of Hawaii at Mnoa)
+The source code is documented at:  https://mark.nelson.engineer/srcdoc/memscan1/
 
 # Memscan
 Memscan is an assignment for my Software Reverse Engineering class.

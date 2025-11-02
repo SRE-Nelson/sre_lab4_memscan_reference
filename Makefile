@@ -45,7 +45,8 @@ doc: $(TARGET)
 	doxygen .doxygen/Doxyfile
 	
 publish: doc
-	rsync --recursive --checksum --delete --compress --stats --chmod=o+r,Do+x .doxygen/docs/html/ marknels@uhunix.hawaii.edu:~/public_html/sre/memscan
+	/usr/bin/rsync --verbose -e 'ssh -p 14590 -i ~/.ssh/id_www' --checksum --recursive --chmod=g-w,o-rwx --delete --force --mkpath --stats --progress .doxygen/docs/html/ www-data@192.168.1.121:/var/www/html/srcdoc/memscan1/
+
 
 test: $(TARGET)
 	./$(TARGET)
